@@ -3,7 +3,8 @@
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Bell, Scan, Lock } from "lucide-react";
+import { Scan, Lock } from "lucide-react";
+import { NotificationBell } from "@/components/notification-bell";
 import { BottomNav } from "@/components/bottom-nav";
 
 export default function UploadPage() {
@@ -82,7 +83,7 @@ export default function UploadPage() {
           U
         </div>
         <h1 className="font-semibold text-lg flex-1">Upload Receipt</h1>
-        <Bell className="w-5 h-5 text-muted-foreground" />
+        <NotificationBell />
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-10 space-y-6">

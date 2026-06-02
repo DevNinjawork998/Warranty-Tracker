@@ -2,10 +2,11 @@ import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Bell, CheckCircle2, AlertTriangle, XCircle, Plus } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, Plus } from "lucide-react";
 import { WarrantyList } from "@/components/warranty-list";
 import { PushPermissionPrompt } from "@/components/push-permission-prompt";
 import { BottomNav } from "@/components/bottom-nav";
+import { NotificationBell } from "@/components/notification-bell";
 import { getStatus } from "@/lib/warranty-status";
 
 export default async function DashboardPage() {
@@ -42,7 +43,7 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-background pb-20">
       <header className="sticky top-0 z-10 bg-card border-b px-4 py-3 flex items-center justify-between">
         <h1 className="font-semibold text-lg">WarrantyGuard</h1>
-        <Bell className="w-5 h-5 text-muted-foreground" />
+        <NotificationBell urgentCount={counts.expiring_soon + counts.expired} />
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">

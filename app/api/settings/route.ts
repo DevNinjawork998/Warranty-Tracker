@@ -4,10 +4,26 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 
 const schema = z.object({
-  alertDaysBefore: z.number().int().min(1).max(365),
-  emailEnabled: z.boolean(),
-  pushEnabled: z.boolean(),
+  alert30Days:     z.boolean(),
+  alert14Days:     z.boolean(),
+  alert7Days:      z.boolean(),
+  monthlySummary:  z.boolean(),
+  systemUpdates:   z.boolean(),
+  pushEnabled:     z.boolean(),
+  emailEnabled:    z.boolean(),
+  whatsappEnabled: z.boolean(),
 });
+
+const DEFAULTS = {
+  alert30Days:     true,
+  alert14Days:     true,
+  alert7Days:      false,
+  monthlySummary:  true,
+  systemUpdates:   false,
+  pushEnabled:     true,
+  emailEnabled:    true,
+  whatsappEnabled: false,
+};
 
 export async function GET() {
   const session = await getSession();
@@ -17,7 +33,7 @@ export async function GET() {
     where: { userId: session.user.id },
   });
 
-  return NextResponse.json(settings ?? { alertDaysBefore: 30, emailEnabled: true, pushEnabled: true });
+  return NextResponse.json(settings ?? { ...DEFAULTS, userId: session.user.id });
 }
 
 export async function PATCH(req: Request) {

@@ -95,8 +95,14 @@ model PushSubscription {
 model NotificationSettings {
   userId          String  @id
   alertDaysBefore Int     @default(30)
-  emailEnabled    Boolean @default(true)
+  alert30Days     Boolean @default(true)
+  alert14Days     Boolean @default(true)
+  alert7Days      Boolean @default(false)
+  monthlySummary  Boolean @default(true)
+  systemUpdates   Boolean @default(false)
   pushEnabled     Boolean @default(true)
+  emailEnabled    Boolean @default(true)
+  whatsappEnabled Boolean @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

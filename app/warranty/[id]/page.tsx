@@ -2,7 +2,8 @@ import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { Bell, AlertTriangle, Download, Pencil } from "lucide-react";
+import { AlertTriangle, Download, Pencil } from "lucide-react";
+import { NotificationBell } from "@/components/notification-bell";
 import { format, differenceInDays } from "date-fns";
 import { getStatus } from "@/lib/warranty-status";
 import { BottomNav } from "@/components/bottom-nav";
@@ -33,7 +34,7 @@ export default async function WarrantyDetailPage({ params }: { params: Promise<{
       <header className="sticky top-0 z-10 bg-card border-b px-4 py-3 flex items-center gap-3">
         <Link href="/dashboard" className="text-foreground">←</Link>
         <h1 className="font-semibold text-lg flex-1">WarrantyGuard</h1>
-        <Bell className="w-5 h-5 text-muted-foreground" />
+        <NotificationBell />
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
