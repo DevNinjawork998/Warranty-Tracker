@@ -1,5 +1,4 @@
-import { Badge } from "@/components/ui/badge";
-import { getStatus, STATUS_LABELS, STATUS_VARIANTS } from "@/lib/warranty-status";
+import { getStatus, WarrantyStatus } from "@/lib/warranty-status";
 import { cn } from "@/lib/utils";
 
 interface StatusBadgeProps {
@@ -7,18 +6,23 @@ interface StatusBadgeProps {
   className?: string;
 }
 
+const styles: Record<WarrantyStatus, string> = {
+  active:        "border border-green-500 text-green-600 bg-green-50",
+  expiring_soon: "border border-amber-500 text-amber-600 bg-amber-50",
+  expired:       "border border-red-300   text-red-400   bg-red-50",
+};
+
+const labels: Record<WarrantyStatus, string> = {
+  active:        "Active",
+  expiring_soon: "Expiring Soon",
+  expired:       "Expired",
+};
+
 export function StatusBadge({ expiryDate, className }: StatusBadgeProps) {
   const status = getStatus(expiryDate);
   return (
-    <Badge
-      variant={STATUS_VARIANTS[status]}
-      className={cn(
-        status === "active" && "bg-green-500 hover:bg-green-500/80 text-white",
-        status === "expiring_soon" && "bg-amber-500 hover:bg-amber-500/80 text-white",
-        className
-      )}
-    >
-      {STATUS_LABELS[status]}
-    </Badge>
+    <span className={cn("rounded-full px-3 py-0.5 text-xs font-medium", styles[status], className)}>
+      {labels[status]}
+    </span>
   );
 }

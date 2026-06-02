@@ -9,10 +9,11 @@ export async function POST(req: Request) {
   const subscription = await req.json();
   const { endpoint } = subscription;
 
+  // L1: re-assert userId on update so an existing endpoint can't be claimed by another user
   await db.pushSubscription.upsert({
     where: { endpoint },
     create: { userId: session.user.id, endpoint, subscription },
-    update: { subscription },
+    update: { userId: session.user.id, subscription },
   });
 
   return NextResponse.json({ ok: true });

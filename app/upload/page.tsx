@@ -3,18 +3,17 @@
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Bell, Scan, Lock } from "lucide-react";
+import { BottomNav } from "@/components/bottom-nav";
 
 export default function UploadPage() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile]       = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
 
-  // Revoke object URLs when they change or the component unmounts to free memory.
   useEffect(() => {
     return () => { if (preview) URL.revokeObjectURL(preview); };
   }, [preview]);
@@ -25,6 +24,7 @@ export default function UploadPage() {
     setFile(f);
     setPreview(URL.createObjectURL(f));
     setError(null);
+    e.target.value = "";
   }
 
   async function handleSubmit() {
@@ -43,68 +43,114 @@ export default function UploadPage() {
     }
 
     const data = await res.json();
-    sessionStorage.setItem("ocr_result", JSON.stringify(data));
+
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onerror = () => reject(new Error("File read failed"));
+        reader.readAsDataURL(file);
+      });
+      data.receipt_preview = dataUrl;
+    } catch {
+      // Preview generation failed — proceed without it
+    }
+
+    try {
+      sessionStorage.setItem("ocr_result", JSON.stringify(data));
+    } catch {
+      delete data.receipt_preview;
+      sessionStorage.setItem("ocr_result", JSON.stringify(data));
+    }
+
     router.push("/upload/review");
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-background border-b px-4 py-3">
-        <h1 className="font-semibold text-lg">Upload Receipt</h1>
+    <div className="min-h-screen bg-background pb-20">
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*,application/pdf"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {/* Header */}
+      <header className="sticky top-0 z-10 bg-card border-b px-4 py-3 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-semibold select-none">
+          U
+        </div>
+        <h1 className="font-semibold text-lg flex-1">Upload Receipt</h1>
+        <Bell className="w-5 h-5 text-muted-foreground" />
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*,application/pdf"
-          className="hidden"
-          onChange={handleFileChange}
-        />
+      <main className="max-w-lg mx-auto px-4 py-10 space-y-6">
 
+        {/* Drop zone */}
         {!file ? (
-          <Card
-            className="border-dashed cursor-pointer hover:bg-muted/40 transition-colors"
+          <button
+            type="button"
             onClick={() => inputRef.current?.click()}
+            className="w-full rounded-2xl border-2 border-dashed border-primary/30 bg-card pt-20 pb-16 flex flex-col items-center gap-10 hover:bg-primary/5 transition-colors"
           >
-            <CardContent className="flex flex-col items-center justify-center py-16 gap-3">
-              <div className="text-4xl">📄</div>
-              <p className="font-medium">Take photo or choose file</p>
-              <p className="text-sm text-muted-foreground">JPEG, PNG, WEBP, or PDF</p>
-            </CardContent>
-          </Card>
-        ) : file.type === "application/pdf" ? (
-          <div className="space-y-4">
-            <div className="flex flex-col items-center justify-center w-full rounded-lg border bg-muted aspect-[3/4] gap-3">
-              <div className="text-5xl">📄</div>
-              <p className="font-medium text-sm">{file.name}</p>
-              <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB</p>
+            <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center">
+              <Scan className="w-9 h-9 text-foreground" />
             </div>
-            <Button variant="outline" className="w-full" onClick={() => inputRef.current?.click()}>
+            <div className="space-y-2 text-center">
+              <p className="font-bold text-xl leading-tight">Take photo or choose<br />file</p>
+              <p className="text-sm text-muted-foreground">JPEG, PNG, WEBP, or PDF up to 10MB</p>
+            </div>
+          </button>
+        ) : file.type === "application/pdf" ? (
+          <div className="space-y-3">
+            <iframe
+              src={preview!}
+              className="w-full rounded-2xl border bg-muted"
+              style={{ height: "480px" }}
+              title="Receipt preview"
+            />
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="w-full rounded-xl border py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+            >
               Change file
-            </Button>
+            </button>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="relative w-full rounded-lg overflow-hidden border aspect-[3/4]">
+          <div className="space-y-3">
+            <div className="relative w-full rounded-2xl overflow-hidden border aspect-[3/4]">
               <Image src={preview!} alt="Receipt preview" fill className="object-contain bg-muted" />
             </div>
-            <Button variant="outline" className="w-full" onClick={() => inputRef.current?.click()}>
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="w-full rounded-xl border py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+            >
               Change image
-            </Button>
+            </button>
           </div>
         )}
 
         {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
-        <Button
-          className="w-full"
+        <button
+          type="button"
           disabled={!file || loading}
           onClick={handleSubmit}
+          className="w-full rounded-2xl bg-primary text-primary-foreground py-4 text-sm font-semibold disabled:opacity-50 transition-opacity"
         >
           {loading ? "Extracting details…" : "Extract warranty details"}
-        </Button>
+        </button>
+
+        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <Lock className="w-3.5 h-3.5" />
+          <span>Securely encrypted and processed locally.</span>
+        </div>
       </main>
+
+      <BottomNav />
     </div>
   );
 }

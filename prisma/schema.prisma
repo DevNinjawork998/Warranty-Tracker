@@ -72,6 +72,8 @@ model Warranty {
   warrantyMonths   Int
   expiryDate       DateTime
   priceMyr         Decimal?  @db.Decimal(10, 2)
+  storeName        String?
+  serialNumber     String?
   receiptImageUrl  String?
   notes            String?
   createdAt        DateTime  @default(now())

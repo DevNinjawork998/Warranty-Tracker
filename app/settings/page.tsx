@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BottomNav } from "@/components/bottom-nav";
 
 const schema = z.object({
   alertDaysBefore: z.number().int().min(1).max(365),
@@ -43,7 +44,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       <header className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center gap-3">
         <button onClick={() => router.back()} className="text-muted-foreground hover:text-foreground">←</button>
         <h1 className="font-semibold text-lg">Settings</h1>
@@ -96,6 +97,8 @@ export default function SettingsPage() {
           Sign out
         </Button>
       </main>
+
+      <BottomNav />
     </div>
   );
 }

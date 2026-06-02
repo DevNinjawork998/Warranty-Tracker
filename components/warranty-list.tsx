@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WarrantyCard } from "@/components/warranty-card";
-import { getStatus, WarrantyStatus } from "@/lib/warranty-status";
 
 interface Warranty {
   id: string;
@@ -12,6 +10,8 @@ interface Warranty {
   purchaseDate: string;
   expiryDate: string;
   priceMyr?: number | null;
+  storeName?: string | null;
+  serialNumber?: string | null;
   receiptImageUrl?: string | null;
 }
 
@@ -19,45 +19,40 @@ interface WarrantyListProps {
   warranties: Warranty[];
 }
 
-const TABS: { value: WarrantyStatus | "all"; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "expiring_soon", label: "Expiring Soon" },
-  { value: "expired", label: "Expired" },
-];
+const RECENT_LIMIT = 5;
 
 export function WarrantyList({ warranties }: WarrantyListProps) {
-  const [tab, setTab] = useState<WarrantyStatus | "all">("all");
+  const [showAll, setShowAll] = useState(false);
 
-  const filtered = warranties.filter((w) => {
-    if (tab === "all") return true;
-    return getStatus(new Date(w.expiryDate)) === tab;
-  });
+  const visible = showAll ? warranties : warranties.slice(0, RECENT_LIMIT);
+  const hasMore = warranties.length > RECENT_LIMIT;
 
   return (
-    <div className="space-y-4">
-      <Tabs value={tab} onValueChange={(v) => setTab(v as WarrantyStatus | "all")}>
-        <TabsList className="w-full">
-          {TABS.map((t) => (
-            <TabsTrigger key={t.value} value={t.value} className="flex-1 text-xs">
-              {t.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-lg">Recent Warranties</h2>
+        {hasMore && !showAll && (
+          <button onClick={() => setShowAll(true)} className="text-sm font-medium text-primary">
+            View All
+          </button>
+        )}
+      </div>
 
-      {filtered.length === 0 ? (
+      {visible.length === 0 ? (
         <p className="text-center text-muted-foreground py-10 text-sm">No warranties found.</p>
       ) : (
         <div className="space-y-3">
-          {filtered.map((w) => (
+          {visible.map((w) => (
             <WarrantyCard
               key={w.id}
+              id={w.id}
               productName={w.productName}
               category={w.category}
               purchaseDate={new Date(w.purchaseDate)}
               expiryDate={new Date(w.expiryDate)}
               priceMyr={w.priceMyr}
+              storeName={w.storeName}
+              serialNumber={w.serialNumber}
               receiptImageUrl={w.receiptImageUrl}
             />
           ))}

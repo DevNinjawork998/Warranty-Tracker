@@ -10,6 +10,8 @@ const schema = z.object({
   purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   warrantyMonths: z.number().int().min(1),
   priceMyr: z.number().nullable().optional(),
+  storeName: z.string().nullable().optional(),
+  serialNumber: z.string().nullable().optional(),
   receiptImageUrl: z.string().url().nullable().optional(),
   notes: z.string().nullable().optional(),
 });
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { productName, category, purchaseDate, warrantyMonths, priceMyr, receiptImageUrl, notes } = parsed.data;
+  const { productName, category, purchaseDate, warrantyMonths, priceMyr, storeName, serialNumber, receiptImageUrl, notes } = parsed.data;
 
   const purchase = new Date(purchaseDate);
   const expiry = addMonths(purchase, warrantyMonths);
@@ -50,6 +52,8 @@ export async function POST(req: Request) {
       warrantyMonths,
       expiryDate: expiry,
       priceMyr: priceMyr ?? null,
+      storeName: storeName ?? null,
+      serialNumber: serialNumber ?? null,
       receiptImageUrl: receiptImageUrl ?? null,
       notes: notes ?? null,
     },

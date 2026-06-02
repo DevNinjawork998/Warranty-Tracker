@@ -1,12 +1,28 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { db } from "@/lib/db";
 import webpush from "web-push";
 import { Resend } from "resend";
 import { format } from "date-fns";
 
+// H1: escape HTML to prevent XSS in email content
+function esc(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 export async function GET(req: Request) {
-  const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  // H1: timing-safe comparison + guard against empty secret
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const auth = req.headers.get("authorization") ?? "";
+  const expected = Buffer.from(`Bearer ${secret}`);
+  const actual = Buffer.from(auth);
+  if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -20,7 +36,6 @@ export async function GET(req: Request) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Fetch all users who have notifications enabled
   const settings = await db.notificationSettings.findMany({
     where: { OR: [{ emailEnabled: true }, { pushEnabled: true }] },
     include: {
@@ -45,41 +60,42 @@ export async function GET(req: Request) {
 
     if (upcoming.length === 0) continue;
 
-    const lines = upcoming.map(
-      (w) => `• ${w.productName} — expires ${format(w.expiryDate, "d MMM yyyy")}`
-    );
-
-    // Push notifications
+    // Push notifications — #9: send concurrently instead of sequentially
     if (pushEnabled) {
-      for (const sub of user.pushSubscriptions) {
-        try {
-          await webpush.sendNotification(
-            sub.subscription as unknown as webpush.PushSubscription,
-            JSON.stringify({
-              title: "Warranty Expiring Soon",
-              body: upcoming.length === 1
-                ? `${upcoming[0].productName} expires on ${format(upcoming[0].expiryDate, "d MMM yyyy")}`
-                : `${upcoming.length} warranties expiring soon`,
-              url: "/dashboard",
-            })
-          );
-        } catch {
-          // Subscription expired — clean up
-          await db.pushSubscription.delete({ where: { endpoint: sub.endpoint } }).catch(() => {});
-        }
-      }
+      await Promise.allSettled(
+        user.pushSubscriptions.map(async (sub) => {
+          try {
+            await webpush.sendNotification(
+              sub.subscription as unknown as webpush.PushSubscription,
+              JSON.stringify({
+                title: "Warranty Expiring Soon",
+                body: upcoming.length === 1
+                  ? `${upcoming[0].productName} expires on ${format(upcoming[0].expiryDate, "d MMM yyyy")}`
+                  : `${upcoming.length} warranties expiring soon`,
+                url: "/dashboard",
+              })
+            );
+          } catch {
+            await db.pushSubscription.delete({ where: { endpoint: sub.endpoint } }).catch(() => {});
+          }
+        })
+      );
     }
 
-    // Email
+    // Email — M1: escape all user-controlled strings before interpolating into HTML
     if (emailEnabled && user.email) {
+      const listItems = upcoming
+        .map((w) => `<li>${esc(w.productName)} — expires ${format(w.expiryDate, "d MMM yyyy")}</li>`)
+        .join("");
+
       await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL ?? "Warranty Tracker <notifications@example.com>",
         to: user.email,
         subject: `${upcoming.length} warranty${upcoming.length > 1 ? "s" : ""} expiring soon`,
         html: `
-          <p>Hi ${user.name ?? "there"},</p>
+          <p>Hi ${esc(user.name ?? "there")},</p>
           <p>The following warranties are expiring within ${alertDaysBefore} days:</p>
-          <ul>${lines.map((l: string) => `<li>${l.replace("•", "").trim()}</li>`).join("")}</ul>
+          <ul>${listItems}</ul>
           <p><a href="${process.env.NEXTAUTH_URL ?? ""}/dashboard">View your dashboard →</a></p>
         `,
       });

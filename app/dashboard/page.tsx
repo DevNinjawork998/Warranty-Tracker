@@ -2,9 +2,11 @@ import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Bell, CheckCircle2, AlertTriangle, XCircle, Plus } from "lucide-react";
 import { WarrantyList } from "@/components/warranty-list";
 import { PushPermissionPrompt } from "@/components/push-permission-prompt";
+import { BottomNav } from "@/components/bottom-nav";
+import { getStatus } from "@/lib/warranty-status";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -22,36 +24,66 @@ export default async function DashboardPage() {
     purchaseDate: w.purchaseDate.toISOString(),
     expiryDate: w.expiryDate.toISOString(),
     priceMyr: w.priceMyr ? Number(w.priceMyr) : null,
+    storeName: w.storeName,
+    serialNumber: w.serialNumber,
     receiptImageUrl: w.receiptImageUrl,
   }));
 
+  const counts = { active: 0, expiring_soon: 0, expired: 0 };
+  for (const w of warranties) counts[getStatus(w.expiryDate)]++;
+
+  const statCards = [
+    { label: "Active",        count: counts.active,        Icon: CheckCircle2, color: "text-green-500" },
+    { label: "Expiring Soon", count: counts.expiring_soon, Icon: AlertTriangle, color: "text-amber-500" },
+    { label: "Expired",       count: counts.expired,       Icon: XCircle,      color: "text-red-400"  },
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center justify-between">
-        <h1 className="font-semibold text-lg">My Warranties</h1>
-        <div className="flex items-center gap-2">
-          <Link href="/settings">
-            <Button variant="ghost" size="sm">Settings</Button>
-          </Link>
-          <Link href="/upload">
-            <Button size="sm">+ Add</Button>
-          </Link>
-        </div>
+    <div className="min-h-screen bg-background pb-20">
+      <header className="sticky top-0 z-10 bg-card border-b px-4 py-3 flex items-center justify-between">
+        <h1 className="font-semibold text-lg">WarrantyGuard</h1>
+        <Bell className="w-5 h-5 text-muted-foreground" />
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
         <PushPermissionPrompt />
+
+        <section>
+          <h2 className="font-semibold text-xl mb-3">Overview</h2>
+          <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
+            {statCards.map(({ label, count, Icon, color }) => (
+              <div key={label} className="bg-card rounded-2xl border p-4 min-w-[140px] flex-shrink-0 space-y-2">
+                <div className="flex items-center gap-1.5">
+                  <Icon className={`w-4 h-4 ${color}`} />
+                  <span className="text-sm text-muted-foreground">{label}</span>
+                </div>
+                <p className="text-3xl font-bold">{count}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {warranties.length === 0 ? (
           <div className="text-center py-20 space-y-4">
             <p className="text-muted-foreground">No warranties yet.</p>
-            <Link href="/upload">
-              <Button>Upload your first receipt</Button>
+            <Link href="/upload" className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-xl px-5 py-2.5 text-sm font-medium">
+              Upload your first receipt
             </Link>
           </div>
         ) : (
           <WarrantyList warranties={serialized} />
         )}
       </main>
+
+      <Link
+        href="/upload"
+        className="fixed bottom-20 right-4 z-40 bg-primary text-primary-foreground w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
+        aria-label="Add warranty"
+      >
+        <Plus className="w-6 h-6" />
+      </Link>
+
+      <BottomNav />
     </div>
   );
 }
