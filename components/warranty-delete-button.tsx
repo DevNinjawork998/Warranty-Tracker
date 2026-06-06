@@ -24,12 +24,14 @@ export function WarrantyDeleteButton({ warrantyId }: { warrantyId: string }) {
 				</p>
 				<div className="flex gap-3">
 					<button
+						type="button"
 						onClick={() => setConfirming(false)}
 						className="flex-1 rounded-xl border py-2.5 text-sm font-medium hover:bg-muted transition-colors"
 					>
 						Cancel
 					</button>
 					<button
+						type="button"
 						onClick={handleDelete}
 						disabled={deleting}
 						className="flex-1 rounded-xl bg-red-600 text-white py-2.5 text-sm font-medium disabled:opacity-50"
@@ -43,6 +45,7 @@ export function WarrantyDeleteButton({ warrantyId }: { warrantyId: string }) {
 
 	return (
 		<button
+			type="button"
 			onClick={() => setConfirming(true)}
 			className="w-full flex items-center justify-center gap-2 bg-red-600 text-white rounded-2xl py-4 font-semibold text-sm hover:bg-red-700 transition-colors"
 		>

@@ -28,9 +28,9 @@ export async function GET(req: Request) {
 	}
 
 	webpush.setVapidDetails(
-		process.env.VAPID_EMAIL!,
-		process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-		process.env.VAPID_PRIVATE_KEY!,
+		process.env.VAPID_EMAIL ?? "",
+		process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "",
+		process.env.VAPID_PRIVATE_KEY ?? "",
 	);
 	const resend = new Resend(process.env.RESEND_API_KEY);
 

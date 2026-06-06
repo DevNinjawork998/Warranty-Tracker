@@ -113,7 +113,7 @@ export default function UploadPage() {
 				) : file.type === "application/pdf" ? (
 					<div className="space-y-3">
 						<iframe
-							src={preview!}
+							src={preview ?? ""}
 							className="w-full rounded-2xl border bg-muted"
 							style={{ height: "480px" }}
 							title="Receipt preview"
@@ -130,7 +130,7 @@ export default function UploadPage() {
 					<div className="space-y-3">
 						<div className="relative w-full rounded-2xl overflow-hidden border aspect-[3/4]">
 							<Image
-								src={preview!}
+								src={preview ?? ""}
 								alt="Receipt preview"
 								fill
 								className="object-contain bg-muted"

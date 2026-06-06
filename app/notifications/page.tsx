@@ -232,8 +232,12 @@ export default async function NotificationsPage() {
 
 				{/* Mark all as read */}
 				{unreadCount > 0 && (
-					<button className="flex items-center gap-2 text-primary text-sm font-medium">
+					<button
+						type="button"
+						className="flex items-center gap-2 text-primary text-sm font-medium"
+					>
 						<svg
+							aria-hidden="true"
 							className="w-4 h-4"
 							fill="none"
 							viewBox="0 0 24 24"

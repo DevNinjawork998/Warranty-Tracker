@@ -33,6 +33,7 @@ export function WarrantyList({ warranties }: WarrantyListProps) {
 				<h2 className="font-semibold text-lg">Recent Warranties</h2>
 				{hasMore && !showAll && (
 					<button
+						type="button"
 						onClick={() => setShowAll(true)}
 						className="text-sm font-medium text-primary"
 					>

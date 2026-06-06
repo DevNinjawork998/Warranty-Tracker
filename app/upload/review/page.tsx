@@ -121,9 +121,9 @@ export default function ReviewPage() {
 			setValue("category", data.category as (typeof CATEGORIES)[number]);
 		}
 		if (data.warranty_months) {
+			const months = data.warranty_months;
 			const closest = WARRANTY_OPTIONS.reduce((prev, cur) =>
-				Math.abs(cur.value - data.warranty_months!) <
-				Math.abs(prev.value - data.warranty_months!)
+				Math.abs(cur.value - months) < Math.abs(prev.value - months)
 					? cur
 					: prev,
 			);
@@ -166,7 +166,11 @@ export default function ReviewPage() {
 	return (
 		<div className="min-h-screen bg-background pb-20">
 			<header className="px-4 py-4 flex items-center gap-3">
-				<button onClick={() => router.back()} className="text-foreground">
+				<button
+					type="button"
+					onClick={() => router.back()}
+					className="text-foreground"
+				>
 					←
 				</button>
 				<h1 className="font-bold text-xl">Review Details</h1>
@@ -228,8 +232,14 @@ export default function ReviewPage() {
 						<div className="bg-card rounded-2xl border divide-y">
 							{/* Product Name */}
 							<div className="p-4 space-y-1.5">
-								<label className="text-sm font-medium">Product Name</label>
+								<label
+									htmlFor="review-productName"
+									className="text-sm font-medium"
+								>
+									Product Name
+								</label>
 								<input
+									id="review-productName"
 									{...register("productName")}
 									placeholder="e.g. iPhone 15 Pro"
 									className="w-full border rounded-xl px-4 py-3 text-sm bg-background outline-none focus:ring-2 focus:ring-primary/30"
@@ -243,9 +253,15 @@ export default function ReviewPage() {
 
 							{/* Merchant / Store */}
 							<div className="p-4 space-y-1.5">
-								<label className="text-sm font-medium">Merchant / Store</label>
+								<label
+									htmlFor="review-storeName"
+									className="text-sm font-medium"
+								>
+									Merchant / Store
+								</label>
 								<FieldRow icon={Store}>
 									<input
+										id="review-storeName"
 										{...register("storeName")}
 										placeholder="e.g. Apple Malaysia"
 										className="w-full text-sm bg-transparent outline-none"
@@ -255,9 +271,15 @@ export default function ReviewPage() {
 
 							{/* Purchase Date */}
 							<div className="p-4 space-y-1.5">
-								<label className="text-sm font-medium">Purchase Date</label>
+								<label
+									htmlFor="review-purchaseDate"
+									className="text-sm font-medium"
+								>
+									Purchase Date
+								</label>
 								<FieldRow icon={Calendar}>
 									<input
+										id="review-purchaseDate"
 										type="date"
 										{...register("purchaseDate")}
 										className="w-full text-sm bg-transparent outline-none"
@@ -272,11 +294,17 @@ export default function ReviewPage() {
 
 							{/* Price */}
 							<div className="p-4 space-y-1.5">
-								<label className="text-sm font-medium">Price</label>
+								<label
+									htmlFor="review-priceMyr"
+									className="text-sm font-medium"
+								>
+									Price
+								</label>
 								<FieldRow icon={Wallet}>
 									<div className="flex items-center gap-2">
 										<span className="text-sm text-muted-foreground">RM</span>
 										<input
+											id="review-priceMyr"
 											type="number"
 											step="0.01"
 											min={0}
@@ -290,13 +318,19 @@ export default function ReviewPage() {
 
 							{/* Warranty Period */}
 							<div className="p-4 space-y-1.5">
-								<label className="text-sm font-medium">Warranty Period</label>
+								<label
+									htmlFor="review-warrantyMonths"
+									className="text-sm font-medium"
+								>
+									Warranty Period
+								</label>
 								<FieldRow icon={ShieldCheck}>
 									<Controller
 										name="warrantyMonths"
 										control={control}
 										render={({ field }) => (
 											<select
+												id="review-warrantyMonths"
 												value={field.value}
 												onChange={(e) => field.onChange(Number(e.target.value))}
 												className="w-full text-sm bg-transparent outline-none appearance-none"
@@ -319,13 +353,19 @@ export default function ReviewPage() {
 
 							{/* Category */}
 							<div className="p-4 space-y-1.5">
-								<label className="text-sm font-medium">Category</label>
+								<label
+									htmlFor="review-category"
+									className="text-sm font-medium"
+								>
+									Category
+								</label>
 								<FieldRow icon={LayoutGrid}>
 									<Controller
 										name="category"
 										control={control}
 										render={({ field }) => (
 											<select
+												id="review-category"
 												value={field.value}
 												onChange={(e) => field.onChange(e.target.value)}
 												className="w-full text-sm bg-transparent outline-none appearance-none"

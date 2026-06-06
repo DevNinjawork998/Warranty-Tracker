@@ -120,6 +120,7 @@ function DeliveryCard({
 			>
 				{checked && (
 					<svg
+						aria-hidden="true"
 						className="w-3 h-3 text-white"
 						fill="none"
 						viewBox="0 0 24 24"
