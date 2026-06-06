@@ -23,7 +23,9 @@ function makeWarranty(id: string, name: string) {
 	};
 }
 
-const SIX = Array.from({ length: 6 }, (_, i) => makeWarranty(`w${i + 1}`, `Product ${i + 1}`));
+const SIX = Array.from({ length: 6 }, (_, i) =>
+	makeWarranty(`w${i + 1}`, `Product ${i + 1}`),
+);
 const FIVE = SIX.slice(0, 5);
 
 describe("WarrantyList", () => {

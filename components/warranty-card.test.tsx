@@ -3,7 +3,15 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { WarrantyCard } from "./warranty-card";
 
 vi.mock("next/link", () => ({
-	default: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
+	default: ({
+		href,
+		children,
+		className,
+	}: {
+		href: string;
+		children: React.ReactNode;
+		className?: string;
+	}) => (
 		<a href={href} className={className}>
 			{children}
 		</a>
@@ -34,40 +42,52 @@ const base = {
 
 describe("WarrantyCard — status badge", () => {
 	it("shows Active badge (green) when more than 30 days remain", () => {
-		render(<WarrantyCard {...base} expiryDate={new Date("2025-04-01T12:00:00Z")} />);
+		render(
+			<WarrantyCard {...base} expiryDate={new Date("2025-04-01T12:00:00Z")} />,
+		);
 		const badge = screen.getByText("Active");
 		expect(badge).toBeInTheDocument();
 		expect(badge).toHaveClass("text-green-600");
 	});
 
 	it("shows Expiring Soon badge (amber) when ≤30 days remain", () => {
-		render(<WarrantyCard {...base} expiryDate={new Date("2025-02-10T12:00:00Z")} />);
+		render(
+			<WarrantyCard {...base} expiryDate={new Date("2025-02-10T12:00:00Z")} />,
+		);
 		const badge = screen.getByText("Expiring Soon");
 		expect(badge).toBeInTheDocument();
 		expect(badge).toHaveClass("text-amber-600");
 	});
 
 	it("shows Expired badge (red) when past expiry", () => {
-		render(<WarrantyCard {...base} expiryDate={new Date("2025-01-01T12:00:00Z")} />);
+		render(
+			<WarrantyCard {...base} expiryDate={new Date("2025-01-01T12:00:00Z")} />,
+		);
 		const badge = screen.getByText("Expired");
 		expect(badge).toBeInTheDocument();
 		expect(badge).toHaveClass("text-red-400");
 	});
 
 	it("renders product name", () => {
-		render(<WarrantyCard {...base} expiryDate={new Date("2025-04-01T12:00:00Z")} />);
+		render(
+			<WarrantyCard {...base} expiryDate={new Date("2025-04-01T12:00:00Z")} />,
+		);
 		expect(screen.getByText("Samsung TV")).toBeInTheDocument();
 	});
 
 	it("shows days left for active warranty", () => {
 		// Jan 15 → Apr 15 = 90 days
-		render(<WarrantyCard {...base} expiryDate={new Date("2025-04-15T12:00:00Z")} />);
+		render(
+			<WarrantyCard {...base} expiryDate={new Date("2025-04-15T12:00:00Z")} />,
+		);
 		expect(screen.getByText("90 days left")).toBeInTheDocument();
 	});
 
 	it("shows days left in amber for expiring soon", () => {
 		// Jan 15 → Feb 10 = 26 days
-		render(<WarrantyCard {...base} expiryDate={new Date("2025-02-10T12:00:00Z")} />);
+		render(
+			<WarrantyCard {...base} expiryDate={new Date("2025-02-10T12:00:00Z")} />,
+		);
 		expect(screen.getByText("26 days left")).toBeInTheDocument();
 	});
 

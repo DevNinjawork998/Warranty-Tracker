@@ -11,7 +11,9 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/image", () => ({
-	default: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
+	default: ({ src, alt }: { src: string; alt: string }) => (
+		<img src={src} alt={alt} />
+	),
 }));
 
 vi.mock("@/components/bottom-nav", () => ({
@@ -55,13 +57,17 @@ describe("ReviewPage", () => {
 	it("redirects to /upload when sessionStorage is empty", async () => {
 		sessionStorage.clear();
 		render(<ReviewPage />);
-		await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith("/upload"));
+		await waitFor(() =>
+			expect(mockRouter.push).toHaveBeenCalledWith("/upload"),
+		);
 	});
 
 	it("populates product name from OCR result", async () => {
 		render(<ReviewPage />);
 		await waitFor(() =>
-			expect(screen.getByPlaceholderText("e.g. iPhone 15 Pro")).toHaveValue("Samsung TV"),
+			expect(screen.getByPlaceholderText("e.g. iPhone 15 Pro")).toHaveValue(
+				"Samsung TV",
+			),
 		);
 	});
 
@@ -70,7 +76,9 @@ describe("ReviewPage", () => {
 		render(<ReviewPage />);
 
 		await waitFor(() =>
-			expect(screen.getByPlaceholderText("e.g. iPhone 15 Pro")).toHaveValue("Samsung TV"),
+			expect(screen.getByPlaceholderText("e.g. iPhone 15 Pro")).toHaveValue(
+				"Samsung TV",
+			),
 		);
 
 		await user.clear(screen.getByPlaceholderText("e.g. iPhone 15 Pro"));
@@ -83,7 +91,9 @@ describe("ReviewPage", () => {
 		const user = userEvent.setup();
 		render(<ReviewPage />);
 		await waitFor(() =>
-			expect(screen.getByPlaceholderText("e.g. iPhone 15 Pro")).toHaveValue("Samsung TV"),
+			expect(screen.getByPlaceholderText("e.g. iPhone 15 Pro")).toHaveValue(
+				"Samsung TV",
+			),
 		);
 
 		await user.clear(screen.getByPlaceholderText("e.g. iPhone 15 Pro"));
@@ -98,12 +108,16 @@ describe("ReviewPage", () => {
 		render(<ReviewPage />);
 
 		await waitFor(() =>
-			expect(screen.getByPlaceholderText("e.g. iPhone 15 Pro")).toHaveValue("Samsung TV"),
+			expect(screen.getByPlaceholderText("e.g. iPhone 15 Pro")).toHaveValue(
+				"Samsung TV",
+			),
 		);
 
 		await user.click(screen.getByRole("button", { name: /confirm & save/i }));
 
-		await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith("/dashboard"));
+		await waitFor(() =>
+			expect(mockRouter.push).toHaveBeenCalledWith("/dashboard"),
+		);
 	});
 
 	it("shows error message when API returns failure", async () => {
@@ -113,7 +127,9 @@ describe("ReviewPage", () => {
 		render(<ReviewPage />);
 
 		await waitFor(() =>
-			expect(screen.getByPlaceholderText("e.g. iPhone 15 Pro")).toHaveValue("Samsung TV"),
+			expect(screen.getByPlaceholderText("e.g. iPhone 15 Pro")).toHaveValue(
+				"Samsung TV",
+			),
 		);
 
 		await user.click(screen.getByRole("button", { name: /confirm & save/i }));

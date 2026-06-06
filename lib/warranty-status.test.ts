@@ -13,15 +13,21 @@ describe("getStatus", () => {
 	});
 
 	it("returns expiring_soon on exactly 30-day boundary", () => {
-		expect(getStatus(new Date("2025-02-14T12:00:00Z"), TODAY)).toBe("expiring_soon");
+		expect(getStatus(new Date("2025-02-14T12:00:00Z"), TODAY)).toBe(
+			"expiring_soon",
+		);
 	});
 
 	it("returns expiring_soon when 1 day remains", () => {
-		expect(getStatus(new Date("2025-01-16T12:00:00Z"), TODAY)).toBe("expiring_soon");
+		expect(getStatus(new Date("2025-01-16T12:00:00Z"), TODAY)).toBe(
+			"expiring_soon",
+		);
 	});
 
 	it("returns expiring_soon when expiry is today (0 days)", () => {
-		expect(getStatus(new Date("2025-01-15T12:00:00Z"), TODAY)).toBe("expiring_soon");
+		expect(getStatus(new Date("2025-01-15T12:00:00Z"), TODAY)).toBe(
+			"expiring_soon",
+		);
 	});
 
 	it("returns expired when expiry was yesterday", () => {

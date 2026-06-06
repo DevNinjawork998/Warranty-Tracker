@@ -23,6 +23,16 @@ npm run build        # production build
 npm run start        # serve production build
 npm run lint         # ESLint
 
+# Tests (Vitest + React Testing Library)
+npm test             # watch mode
+npm run test:run     # single run (CI)
+npm run test:coverage  # coverage report
+npx vitest run path/to/file.test.ts  # run one file
+
+# Formatting / linting
+npx biome check .          # check all files
+npx biome check --write .  # auto-fix safe issues
+
 # Database (Docker)
 npm run db:up        # start Postgres container
 npm run db:down      # stop container (data persists)
@@ -35,7 +45,6 @@ npm run setup        # first-time: install + db:up + migrate + seed
 # Prisma
 npx prisma generate  # regenerate client after schema changes
 npx prisma migrate dev --name <name>  # create and apply a migration
-npx vitest run path/to/file.test.ts   # run a single test
 ```
 
 Generate VAPID keys (one-time): `npx web-push generate-vapid-keys`
@@ -54,6 +63,8 @@ Generate VAPID keys (one-time): `npx web-push generate-vapid-keys`
 | Email | Resend |
 | Push | Web Push API (`web-push`) + manual service worker |
 | Scheduling | Vercel Cron (`vercel.json`) — 08:00 UTC daily (~4 PM MYT) |
+| Formatter/Linter | Biome v2 (`biome.json`) — replaces Prettier + most ESLint rules |
+| Tests | Vitest v4 + React Testing Library + MSW v2 (`vitest.config.ts`) |
 
 ## Architecture
 
@@ -67,7 +78,7 @@ Generate VAPID keys (one-time): `npx web-push generate-vapid-keys`
 - `app/warranty/[id]/` — warranty detail: status banner, product/timeline cards, actions
 - `app/warranty/[id]/edit/` — edit form pre-populated from DB, PATCHes on save
 - `app/notifications/` — notification center; derives items from DB warranty state
-- `app/settings/` — notification preferences UI with sign-out
+- `app/settings/` — **server component** that fetches `NotificationSettings` from DB, renders `<SettingsForm>`
 
 **API routes**
 - `app/api/auth/[...nextauth]/` — Auth.js catch-all
@@ -82,7 +93,7 @@ Generate VAPID keys (one-time): `npx web-push generate-vapid-keys`
 
 ### Key files
 - `lib/auth.ts` — Auth.js config (providers, JWT/session callbacks that inject `session.user.id`)
-- `lib/db.ts` — Prisma singleton with `PrismaPg` adapter
+- `lib/db.ts` — Prisma singleton with `PrismaPg` adapter; throws at startup if `DATABASE_URL` missing
 - `lib/session.ts` — `getSession()` wrapper; returns mock session when `BYPASS_AUTH=true`
 - `lib/warranty-status.ts` — `getStatus(expiryDate)` → `active | expiring_soon | expired`
 - `lib/rate-limit.ts` — in-memory rate limiter (swap for Upstash in prod)
@@ -93,6 +104,9 @@ Generate VAPID keys (one-time): `npx web-push generate-vapid-keys`
 - `public/sw-push.js` — handles `push` and `notificationclick` service worker events
 - `vercel.json` — Vercel Cron schedule
 - `docker-compose.yml` — local Postgres 17 on port 5432
+- `vitest.config.ts` — Vitest config (jsdom env, `@` alias, `tests/setup.ts` setup file)
+- `tests/setup.ts` — imports `@testing-library/jest-dom` matchers
+- `biome.json` — Biome formatter + linter config (tabs, double quotes, Tailwind CSS enabled)
 
 ### Key components
 - `components/bottom-nav.tsx` — fixed 3-tab nav (Dashboard / Upload / Settings); `usePathname()` for active state
@@ -103,6 +117,7 @@ Generate VAPID keys (one-time): `npx web-push generate-vapid-keys`
 - `components/notification-bell.tsx` — `<Link href="/notifications">` with red badge when `urgentCount > 0`
 - `components/push-permission-prompt.tsx` — requests push permission; try-caught subscribe
 - `components/service-worker-register.tsx` — registers `/sw-push.js` on mount
+- `components/settings-form.tsx` — client component for notification settings toggles; receives `initialSettings` from `app/settings/page.tsx` server component
 
 ### Prisma v7 key rules
 - Generator is `prisma-client`, not `prisma-client-js`; output is `lib/generated/prisma/` (gitignored)
@@ -121,6 +136,22 @@ Generate VAPID keys (one-time): `npx web-push generate-vapid-keys`
 - Push subscriptions are upserted by `endpoint`; stale ones are deleted on failed delivery
 - Receipt images stored in Vercel Blob (private); accessed via `/api/receipt/[id]` server proxy
 - OCR result + receipt base64 preview passed between upload and review pages via `sessionStorage`
+- Server components pass dates to client components as ISO strings (`.toISOString()`), never as `Date` objects
+- `priceMyr` is a Prisma `Decimal` — always convert with `Number()` before passing to client components
+
+### Form conventions
+- Forms use `react-hook-form` + `zodResolver`
+- Numeric inputs use `{ valueAsNumber: true }` in `register()` — this produces `NaN` when left empty
+- Always wrap numeric schemas with `.catch(undefined)` to silently coerce NaN: `z.number().min(0).nullable().optional().catch(undefined)`
+- Enum selects using shadcn `<Select>` use `setValue()` in `onValueChange`, not native `<select>` with `register()`
+
+### Testing conventions
+- Test files: `*.test.ts` / `*.test.tsx`, co-located next to the file being tested OR in `tests/` at root
+- Pure functions (`lib/`): standard Vitest unit tests
+- API route handlers: import handler + mock `@/lib/db` and `@/lib/session` via `vi.mock`; do NOT use a real DB for unit tests
+- Components: React Testing Library; mock `next/navigation`, `next/image`, and heavy client components via `vi.mock`
+- In jsdom, `fetch` with relative URLs throws — use `vi.stubGlobal("fetch", vi.fn()...)` in `beforeEach` for component tests that call the API
+- Run `npm run test:run` before committing
 
 ### OCR model switching
 
