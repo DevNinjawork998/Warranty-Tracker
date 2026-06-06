@@ -42,7 +42,7 @@ const schema = z.object({
 	productName: z.string().min(1, "Product name is required"),
 	storeName: z.string().optional(),
 	purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
-	priceMyr: z.number().min(0).nullable().optional(),
+	priceMyr: z.number().min(0).nullable().optional().catch(undefined),
 	warrantyMonths: z.number().int().min(1, "Select warranty period"),
 	category: z.enum(CATEGORIES),
 	serialNumber: z.string().optional(),

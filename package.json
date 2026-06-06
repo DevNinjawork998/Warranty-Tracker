@@ -13,7 +13,10 @@
 		"db:migrate": "npx prisma migrate dev",
 		"db:studio": "npx prisma studio",
 		"db:seed": "docker compose exec -T db psql -U warranty -d warranty_tracker < prisma/seed.sql",
-		"setup": "npm install && docker compose up -d && sleep 3 && npx prisma migrate dev && npm run db:seed"
+		"setup": "npm install && docker compose up -d && sleep 3 && npx prisma migrate dev && npm run db:seed",
+		"test": "vitest",
+		"test:run": "vitest run",
+		"test:coverage": "vitest run --coverage"
 	},
 	"dependencies": {
 		"@anthropic-ai/sdk": "^0.100.1",
